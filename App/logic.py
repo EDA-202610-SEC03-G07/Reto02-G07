@@ -27,13 +27,13 @@ def new_logic():
     catalog["computers"] = al.new_list()
  
     # Mapas de primer nivel
-    catalog["computers_by_os"]                 = lp.new_map(10)
-    catalog["computers_by_brand"]              = lp.new_map(30)
-    catalog["computers_by_cores_year"]         = lp.new_map(20)
-    catalog["computers_by_gpu_brand"]          = lp.new_map(200)
-    catalog["computers_by_cpu_brand_gpu_model"]= lp.new_map(5)   # solo Intel / AMD
-    catalog["computers_by_brand_form"]         = lp.new_map(30)
-    catalog["computers_by_form_display"]       = lp.new_map(10)
+    catalog["computers_by_os"] = lp.new_map(10)
+    catalog["computers_by_brand"] = lp.new_map(30)
+    catalog["computers_by_cores_year"] = lp.new_map(20)
+    catalog["computers_by_gpu_brand"] = lp.new_map(200)
+    catalog["computers_by_cpu_brand_gpu_model"]= lp.new_map(5) 
+    catalog["computers_by_brand_form"] = lp.new_map(30)
+    catalog["computers_by_form_display"] = lp.new_map(10)
  
     return catalog
 
@@ -90,16 +90,13 @@ def load_data(catalog, filename):
             except ValueError:
                 pass
  
-        price = comp.get("price", "")
-        if price not in ("", None):
-            try:
-                price_float = float(price)
-                if min_price is None or price_float < min_price:
-                    min_price = price_float
-                if max_price is None or price_float > max_price:
-                    max_price = price_float
-            except ValueError:
-                pass
+        price_float = 0.0
+        if comp.get("price"):
+            price_float = float(comp["price"])
+            if min_price is None or price_float < min_price:
+                min_price = price_float
+            if max_price is None or price_float > max_price:
+                max_price = price_float
  
     sorted_computers = al.sub_list(catalog["computers"], 0, al.size(catalog["computers"]))
     al.merge_sort(sorted_computers, sort_by_price_desc_model_asc)
@@ -125,12 +122,39 @@ def load_data(catalog, filename):
 # Funciones de consulta sobre el catálogo
 
 
-def req_1(catalog):
+def req_1(catalog, brand, form_factor):
     """
     Retorna el resultado del requerimiento 1
     """
-    # TODO: Modificar el requerimiento 1
-    pass
+    brand = brand.strip().upper()
+    form_factor = form_factor.strip().upper()
+    inner_map = lp.get(catalog["computers_by_brand_form"], brand)
+    if inner_map is None:
+        return (0, 0.0, al.new_list())
+    lst = lp.get(inner_map, form_factor)
+    if lst is None:
+        return (0, 0.0, al.new_list())
+    
+    copied_list = al.new_list()
+    for i in range(al.size(lst)):
+        al.add_last(copied_list, al.get_element(lst, i))
+    
+    total = al.size(copied_list)
+
+    sum_price = 0.0
+    count = 0
+    for i in range(total):
+        comp = al.get_element(copied_list, i)
+        price = 0.0
+        if comp.get("price"):
+            price = float(comp["price"])
+            sum_price += price
+            count += 1
+    avg_price = sum_price / count if count > 0 else 0.0
+    
+    al.merge_sort(copied_list, sort_by_price_desc_model_asc)
+    
+    return (total, avg_price, copied_list)
 
 def req_2(catalog, nucleos, año_de_lanzamiento):
     cumplen=0
@@ -183,6 +207,8 @@ def req_3(catalog, n, gpu_model, brand):
     Retorna el resultado del requerimiento 3
     """
     # TODO: Modificar el requerimiento 3
+    gpu_model = gpu_model.strip().upper()
+    brand = brand.strip().upper()
     Inicio = getTime()
     
 
@@ -231,26 +257,75 @@ def req_3(catalog, n, gpu_model, brand):
     }
 
 
-def req_4(catalog):
+def req_4(catalog, cpu_brand, gpu_model):
     """
     Retorna el resultado del requerimiento 4
     """
-    # TODO: Modificar el requerimiento 4
-    pass
+    cpu_brand = cpu_brand.strip().upper() 
+    gpu_model = gpu_model.strip().upper() 
+    
+    inner_map = lp.get(catalog["computers_by_cpu_brand_gpu_model"], cpu_brand)
+    # print("\n|-----------------------------|")
+    # print(f"Inner map for CPU brand '{cpu_brand}': {inner_map}")
+    # print(inner_map)
+    # print("|-----------------------------|\n")
+    if inner_map is None:
+        return (0, 0.0, 0.0, 0.0, 0.0, al.new_list())
+    lst = lp.get(inner_map, gpu_model)
+    if lst is None:
+        return (0, 0.0, 0.0, 0.0, 0.0, al.new_list())
+    
+   
+    copied_list = al.new_list()
+    for i in range(al.size(lst)):
+        al.add_last(copied_list, al.get_element(lst, i))
+    
+    total = al.size(copied_list)
+
+    sum_price = 0.0
+    sum_vram = 0.0
+    sum_ram = 0.0
+    sum_boost = 0.0
+    for i in range(total):
+        comp = al.get_element(copied_list, i)
+        price = float(comp["price"]) if comp["price"] else 0.0
+        vram = float(comp["vram_gb"]) if comp["vram_gb"] else 0.0
+        ram = float(comp["ram_gb"]) if comp["ram_gb"] else 0.0
+        boost = float(comp["cpu_boost_ghz"]) if comp["cpu_boost_ghz"] else 0.0
+        sum_price += price
+        sum_vram += vram
+        sum_ram += ram
+        sum_boost += boost
+    
+    avg_price = sum_price / total if total > 0 else 0.0
+    avg_vram = sum_vram / total if total > 0 else 0.0
+    avg_ram = sum_ram / total if total > 0 else 0.0
+    avg_boost = sum_boost / total if total > 0 else 0.0
+    
+   
+    al.merge_sort(copied_list, sort_by_price_desc_weight_asc)
+    
+    return (total, avg_price, avg_vram, avg_ram, avg_boost, copied_list)
 
 
-def req_5(catalog):
+def req_5(catalog, n, initial_release_year, final_release_year, brand, form_factor):
     """
     Retorna el resultado del requerimiento 5
     """
     # TODO: Modificar el requerimiento 5
+    brand = brand.strip().upper()
+    form_factor = form_factor.strip().upper()
+    initial_release_year = int(initial_release_year)
+    final_release_year = int(final_release_year)
     pass
 
-def req_6(catalog):
+def req_6(catalog, n, form_factor, display_type):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
+    form_factor = form_factor.strip().upper()
+    display_type = display_type.strip().upper() 
     pass
 
 
@@ -268,38 +343,38 @@ def add_computer(catalog, computer):
     #Índice por marca
     add_to_nested_list(catalog["computers_by_brand"], computer["brand"], computer)
  
-    #Índice por núcleos → año
-    cores = computer.get("cpu_cores", "desconocido") or "desconocido"
-    year  = computer.get("release_year", "desconocido") or "desconocido"
+    #Índice por núcleos -> año
+    cores = computer["cpu_cores"] or "desconocido"
+    year  = computer["release_year"] or "desconocido"
     add_to_double_nested_list(
         catalog["computers_by_cores_year"],
         cores, year, computer
     )
  
-    #Índice por modelo de GPU → marca
-    gpu_model = computer.get("gpu_model", "desconocido") or "desconocido"
-    brand     = computer.get("brand", "desconocido") or "desconocido"
+    #Índice por modelo de GPU -> marca
+    gpu_model = computer["gpu_model"] or "desconocido"
+    brand     = computer["brand"] or "desconocido"
     add_to_double_nested_list(
         catalog["computers_by_gpu_brand"],
         gpu_model, brand, computer
     )
  
-    #Índice por marca de CPU → modelo de GPU
-    cpu_brand = computer.get("cpu_brand", "desconocido") or "desconocido"
+    #Índice por marca de CPU -> modelo de GPU
+    cpu_brand = computer["cpu_brand"] or "desconocido"
     add_to_double_nested_list(
         catalog["computers_by_cpu_brand_gpu_model"],
         cpu_brand, gpu_model, computer
     )
  
-    #Índice por marca → factor de forma
-    form_factor = computer.get("form_factor", "desconocido") or "desconocido"
+    #Índice por marca -> factor de forma
+    form_factor = computer["form_factor"] or "desconocido"
     add_to_double_nested_list(
         catalog["computers_by_brand_form"],
         brand, form_factor, computer
     )
  
-    #Índice por factor de forma → tipo de pantalla
-    display_type = computer.get("display_type", "desconocido") or "desconocido"
+    #Índice por factor de forma -> tipo de pantalla
+    display_type = computer["display_type"] or "desconocido"
     add_to_double_nested_list(
         catalog["computers_by_form_display"],
         form_factor, display_type, computer
@@ -326,8 +401,8 @@ def add_to_double_nested_list(mapa_externo, outer_key, inner_key, element):
     Auxiliar: estructura de dos niveles (mapa_externo[outer_key][inner_key] = lista).
     Si alguno de los niveles no existe, lo crea.
     """
-    outer_key = str(outer_key) if outer_key not in ("", None) else "desconocido"
-    inner_key = str(inner_key) if inner_key not in ("", None) else "desconocido"
+    outer_key = str(outer_key).strip().upper() if outer_key not in ("", None) else "DESCONOCIDO"
+    inner_key = str(inner_key).strip().upper() if inner_key not in ("", None) else "DESCONOCIDO"
  
     inner_map = lp.get(mapa_externo, outer_key)
     if inner_map is None:
@@ -341,25 +416,43 @@ def add_to_double_nested_list(mapa_externo, outer_key, inner_key, element):
         lp.put(inner_map, inner_key, lst)
  
     al.add_last(lst, element)
+    
 def sort_by_price_desc_model_asc(comp_a, comp_b):
+    is_sorted = False
+    price_a = 0.0
+    if comp_a["price"]:
+        price_a = float(comp_a["price"])
+    price_b = 0.0
+    if comp_b["price"]:
+        price_b = float(comp_b["price"])
+
+    if price_a > price_b:
+        is_sorted = True
+    elif price_a == price_b:
+        model_a = comp_a["model"] or ""
+        model_b = comp_b["model"] or ""
+        if model_a < model_b:
+            is_sorted = True
+    return is_sorted
+
+
+def sort_by_price_desc_weight_asc(comp_a, comp_b):
     """
     Criterio de ordenamiento para merge_sort (retorna True si comp_a debe ir ANTES que comp_b).
-    Ordena por precio de forma descendente y, en caso de empate, por modelo de forma ascendente.
+    Ordena por precio de forma descendente y, en caso de empate, por weight_kg de forma ascendente.
     """
-    try:
-        price_a = float(comp_a.get("price", 0) or 0)
-    except ValueError:
-        price_a = 0.0
-    try:
-        price_b = float(comp_b.get("price", 0) or 0)
-    except ValueError:
-        price_b = 0.0
- 
-    if price_a != price_b:
-        return price_a > price_b          # desc por precio
-    model_a = str(comp_a.get("model", "") or "")
-    model_b = str(comp_b.get("model", "") or "")
-    return model_a < model_b  
+    is_sorted = False
+    price_a = float(comp_a["price"]) if comp_a["price"] else 0.0
+    price_b = float(comp_b["price"]) if comp_b["price"] else 0.0
+
+    if price_a > price_b:
+        is_sorted = True
+    elif price_a == price_b:
+        weight_a = float(comp_a["weight_kg"]) if comp_a["weight_kg"] else 0.0
+        weight_b = float(comp_b["weight_kg"]) if comp_b["weight_kg"] else 0.0
+        if weight_a < weight_b:
+            is_sorted = True
+    return is_sorted
 #  -------------------------------------------------------------
 # Funciones utilizadas para obtener memoria y tiempo
 #  -------------------------------------------------------------

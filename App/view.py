@@ -53,9 +53,6 @@ def load_data(control):
                    tablefmt="rounded_outline",
                    colalign=("left", "right")))
  
-    #  Distribución por sistema operativo 
-    #os_rows = sorted(os_counts.items(), key=lambda x: x[1], reverse=True)
- 
     print("\n" + "=" * 55)
     print("       DISTRIBUCIÓN POR SISTEMA OPERATIVO")
     print("=" * 55)
@@ -163,7 +160,7 @@ def print_req_1(control, brand, form_factor):
     print(f"Total de computadores encontrados: {total}")
     print(f"Precio promedio: ${avg_price:,.2f}")
     
-    # Build rows
+    
     rows = []
     size = al.size(sorted_list)
     if size > 20:
@@ -192,7 +189,7 @@ def print_req_2(control):
     pass
 
 
-def print_req_3(control):
+def print_req_3(control, n, gpu_model, brand):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
@@ -200,15 +197,39 @@ def print_req_3(control):
     pass
 
 
-def print_req_4(control):
+def print_req_4(control, cpu_brand, gpu_model):
     """
         Función que imprime la solución del Requerimiento 4 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    start_time = lg.getTime()
+    total, avg_price, avg_vram, avg_ram, avg_boost, sorted_list = lg.req_4(control, cpu_brand, gpu_model)
+    stop_time = lg.getTime()
+    delta_time = lg.deltaTime(stop_time, start_time)
+    
+    print(f"\nTiempo de ejecución: {delta_time:.2f} ms")
+    print(f"Total de computadores encontrados: {total}")
+    print(f"Precio promedio: ${avg_price:,.2f}")
+    print(f"VRAM promedio: {avg_vram:.2f} GB")
+    print(f"RAM promedio: {avg_ram:.2f} GB")
+    print(f"Boost promedio: {avg_boost:.2f} GHz")
+    
+    
+    rows = []
+    size = al.size(sorted_list)
+    for i in range(min(2, size)):
+        comp = al.get_element(sorted_list, i)
+        model = comp["model"] or "N/A"
+        brand = comp["brand"] or "N/A"
+        year = comp["release_year"] or "N/A"
+        cpu_model = comp["cpu_model"] or "N/A"
+        price = f"${float(comp['price']):,.2f}" if comp["price"] else "N/A"
+        rows.append([model, brand, year, cpu_model, price])
+    
+    headers = ["Modelo", "Marca", "Año", "CPU Model", "Precio"]
+    print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
 
 
-def print_req_5(control):
+def print_req_5(control, n, initial_release_year, final_release_year, brand, form_factor):
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
@@ -216,7 +237,7 @@ def print_req_5(control):
     pass
 
 
-def print_req_6(control):
+def print_req_6(control, n, form_factor, display_type):
     """
         Función que imprime la solución del Requerimiento 6 en consola
     """
@@ -248,16 +269,29 @@ def main():
             print_req_2(control)
 
         elif int(inputs) == 3:
-            print_req_3(control)
+            n = int(input("Ingrese el número de resultados a mostrar: "))
+            gpu_model = input("Ingrese el modelo de GPU a buscar: ")
+            brand = input("Ingrese la marca a buscar: ")
+            print_req_3(control, n, gpu_model, brand)
 
         elif int(inputs) == 4:
-            print_req_4(control)
+            cpu_brand = input("Ingrese la marca de CPU a buscar: ")
+            gpu_model = input("Ingrese el modelo de GPU a buscar: ")
+            print_req_4(control, cpu_brand, gpu_model)
 
         elif int(inputs) == 5:
-            print_req_5(control)
+            n = int(input("Ingrese el número de resultados a mostrar: "))
+            initial_release_year = input("Ingrese el año de lanzamiento inicial: ")
+            final_release_year = input("Ingrese el año de lanzamiento final: ")
+            brand = input("Ingrese la marca a buscar: ")
+            form_factor = input("Ingrese el factor de forma a buscar (ATX, SFF, MICRO-ATX): ")
+            print_req_5(control, n, initial_release_year, final_release_year, brand, form_factor)
 
         elif int(inputs) == 6:
-            print_req_6(control)
+            n = int(input("Ingrese el número de resultados a mostrar: "))
+            form_factor = input("Ingrese el factor de forma a buscar (ATX, SFF, MICRO-ATX): ")
+            display_type = input("Ingrese el tipo de pantalla a buscar (LCD, LED, OLED): ")
+            print_req_6(control, n, form_factor, display_type)
 
         elif int(inputs) == 7:
             working = False
