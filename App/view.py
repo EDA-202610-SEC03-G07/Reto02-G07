@@ -73,24 +73,22 @@ def load_data(control):
         rows = []
         for i in range(al.size(lst)):
             c = al.get_element(lst, i)
-            storage = c.get("storage_gb", "N/A") or "N/A"
-            try:
+            storage = c["storage_gb"] or "N/A"
+            if storage != "N/A":
                 storage = f"{float(storage):,.0f} GB"
-            except (ValueError, TypeError):
+            else:
                 storage = "N/A"
-            price = c.get("price", "N/A") or "N/A"
-            try:
-                price = f"${float(price):,.2f}"
-            except (ValueError, TypeError):
-                price = "N/A"
+            price = "N/A"
+            if c["price"]:
+                price = f"${float(c["price"]):,.2f}"
             rows.append([
-                c.get("brand",       "N/A") or "N/A",
-                c.get("model",       "N/A") or "N/A",
-                c.get("device_type", "N/A") or "N/A",
-                c.get("cpu_model",   "N/A") or "N/A",
-                c.get("ram_gb",      "N/A") or "N/A",
+                c["brand"] or "N/A",
+                c["model"] or "N/A",
+                c["device_type"] or "N/A",
+                c["cpu_model"] or "N/A",
+                c["ram_gb"] or "N/A",
                 storage,
-                c.get("release_year","N/A") or "N/A",
+                c["release_year"] or "N/A",
                 price,
             ])
         return rows
@@ -122,7 +120,7 @@ def print_data(control, id):
     size = al.size(computers)
 
     if id < 0 or id >= size:
-        print(f"\n[!] ID {id} fuera de rango. Total de registros: {size}")
+        print(f"\n! ID {id} fuera de rango. Total de registros: {size}")
         return
 
     comp = al.get_element(computers, id)
@@ -140,12 +138,50 @@ def print_data(control, id):
                    colalign=("left", "left")))
     print()
 
-def print_req_1(control):
+def print_req_1(control, brand, form_factor):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    def build_row(comp):
+        device_type = comp["device_type"] or "N/A"
+        model = comp["model"] or "N/A"
+        os = comp["os"] or "N/A"
+        cpu_brand = comp["cpu_brand"] or "N/A"
+        ram_gb = comp["ram_gb"] or "N/A"
+        storage_capacity = comp["storage_gb"] or "N/A"
+        price = "N/A"
+        if comp["price"]:
+            price = f"${float(comp["price"]):,.2f}"
+        return [device_type, model, os, cpu_brand, ram_gb, storage_capacity, price]
+    
+    start_time = lg.getTime()
+    total, avg_price, sorted_list = lg.req_1(control, brand, form_factor)
+    stop_time = lg.getTime()
+    delta_time = lg.deltaTime(stop_time, start_time)
+    
+    print(f"\nTiempo de ejecución: {delta_time:.2f} ms")
+    print(f"Total de computadores encontrados: {total}")
+    print(f"Precio promedio: ${avg_price:,.2f}")
+    
+    # Build rows
+    rows = []
+    size = al.size(sorted_list)
+    if size > 20:
+        # primeros 10
+        for i in range(10):
+            comp = al.get_element(sorted_list, i)
+            rows.append(build_row(comp))
+        # ultimos 10
+        for i in range(size - 10, size):
+            comp = al.get_element(sorted_list, i)
+            rows.append(build_row(comp))
+    else:
+        for i in range(size):
+            comp = al.get_element(sorted_list, i)
+            rows.append(build_row(comp))
+    
+    headers = ["Tipo", "Modelo", "OS", "CPU Brand", "RAM (GB)", "Almacenamiento", "Precio (USD)"]
+    print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
 
 
 def print_req_2(control):
@@ -204,7 +240,9 @@ def main():
             print("Cargando información de los archivos ....\n")
             data = load_data(control)
         elif int(inputs) == 1:
-            print_req_1(control)
+            brand = input("Ingrese la marca a buscar: ")
+            form_factor = input("Ingrese el factor de forma a buscar (ATX, SFF, MICRO-ATX): ")
+            print_req_1(control, brand, form_factor)
 
         elif int(inputs) == 2:
             print_req_2(control)
@@ -218,7 +256,7 @@ def main():
         elif int(inputs) == 5:
             print_req_5(control)
 
-        elif int(inputs) == 5:
+        elif int(inputs) == 6:
             print_req_6(control)
 
         elif int(inputs) == 7:
