@@ -64,12 +64,12 @@ def load_data(catalog, filename):
     total_computers = al.size(catalog["computers"])
  
     # Total por sistema operativo
-    os_counts = {}
+    os_counts = al.new_list()
     keys = lp.key_set(catalog["computers_by_os"])
     for i in range(al.size(keys)):
         os_name = al.get_element(keys, i)
         os_list = lp.get(catalog["computers_by_os"], os_name)
-        os_counts[os_name] = al.size(os_list)
+        al.add_last(os_counts, (os_name, al.size(os_list)))
  
     # Año mínimo / máximo y precio mínimo / máximo
     min_year = max_year = None
@@ -101,12 +101,24 @@ def load_data(catalog, filename):
             except ValueError:
                 pass
  
+    sorted_computers = al.sub_list(catalog["computers"], 0, al.size(catalog["computers"]))
+    al.merge_sort(sorted_computers, sort_by_price_desc_model_asc)
+ 
+    n = al.size(sorted_computers)
+    if n <= 10:
+        first_five = al.sub_list(sorted_computers, 0, n)
+        last_five  = al.new_list()
+    else:
+        first_five = al.sub_list(sorted_computers, 0, 5)
+        last_five  = al.sub_list(sorted_computers, n - 5, 5)
+ 
     return (
         total_computers,
         os_counts,
         min_year, max_year,
         min_price, max_price,
         delta_time, delta_memory,
+        first_five, last_five,
     )
  
 
@@ -247,7 +259,25 @@ def add_to_double_nested_list(mapa_externo, outer_key, inner_key, element):
         lp.put(inner_map, inner_key, lst)
  
     al.add_last(lst, element)
-    
+def sort_by_price_desc_model_asc(comp_a, comp_b):
+    """
+    Criterio de ordenamiento para merge_sort (retorna True si comp_a debe ir ANTES que comp_b).
+    Ordena por precio de forma descendente y, en caso de empate, por modelo de forma ascendente.
+    """
+    try:
+        price_a = float(comp_a.get("price", 0) or 0)
+    except ValueError:
+        price_a = 0.0
+    try:
+        price_b = float(comp_b.get("price", 0) or 0)
+    except ValueError:
+        price_b = 0.0
+ 
+    if price_a != price_b:
+        return price_a > price_b          # desc por precio
+    model_a = str(comp_a.get("model", "") or "")
+    model_b = str(comp_b.get("model", "") or "")
+    return model_a < model_b  
 #  -------------------------------------------------------------
 # Funciones utilizadas para obtener memoria y tiempo
 #  -------------------------------------------------------------

@@ -32,7 +32,8 @@ def load_data(control):
     (total, os_counts,
      min_year, max_year,
      min_price, max_price,
-     delta_time, delta_memory) = lg.load_data(control, filename)
+     delta_time, delta_memory,
+     first_five, last_five) = lg.load_data(control, filename)
     
     summary = [
         ["Total de computadores cargados", total],
@@ -43,7 +44,7 @@ def load_data(control):
         ["Tiempo de carga (ms)",           f"{delta_time:.2f}"],
         ["Memoria utilizada (KB)",         f"{delta_memory:.2f}"],
     ]
-
+ 
     print("\n" + "=" * 55)
     print("          RESUMEN DE CARGA DE DATOS")
     print("=" * 55)
@@ -51,17 +52,64 @@ def load_data(control):
                    headers=["Métrica", "Valor"],
                    tablefmt="rounded_outline",
                    colalign=("left", "right")))
-
+ 
     #  Distribución por sistema operativo 
-    os_rows = sorted(os_counts.items(), key=lambda x: x[1], reverse=True)
-
+    #os_rows = sorted(os_counts.items(), key=lambda x: x[1], reverse=True)
+ 
     print("\n" + "=" * 55)
     print("       DISTRIBUCIÓN POR SISTEMA OPERATIVO")
     print("=" * 55)
+    os_rows = []
+    for i in range(al.size(os_counts)):
+        os_rows.append(al.get_element(os_counts, i))
     print(tabulate(os_rows,
                    headers=["Sistema Operativo", "Cantidad"],
                    tablefmt="rounded_outline",
                    colalign=("left", "right")))
+    print()
+ 
+    # Primeros 5 y últimos 5 ordenados desc. por precio
+    def _comp_rows(lst):
+        rows = []
+        for i in range(al.size(lst)):
+            c = al.get_element(lst, i)
+            storage = c.get("storage_gb", "N/A") or "N/A"
+            try:
+                storage = f"{float(storage):,.0f} GB"
+            except (ValueError, TypeError):
+                storage = "N/A"
+            price = c.get("price", "N/A") or "N/A"
+            try:
+                price = f"${float(price):,.2f}"
+            except (ValueError, TypeError):
+                price = "N/A"
+            rows.append([
+                c.get("brand",       "N/A") or "N/A",
+                c.get("model",       "N/A") or "N/A",
+                c.get("device_type", "N/A") or "N/A",
+                c.get("cpu_model",   "N/A") or "N/A",
+                c.get("ram_gb",      "N/A") or "N/A",
+                storage,
+                c.get("release_year","N/A") or "N/A",
+                price,
+            ])
+        return rows
+ 
+    headers_comp = ["Marca", "Modelo", "Tipo", "CPU", "RAM (GB)",
+                    "Almacenamiento", "Año", "Precio"]
+ 
+    print("\n" + "=" * 100)
+    print("   PRIMEROS 5 EQUIPOS (mayor precio)")
+    print("=" * 100)
+    print(tabulate(_comp_rows(first_five), headers=headers_comp,
+                   tablefmt="rounded_outline"))
+ 
+    if al.size(last_five) > 0:
+        print("\n" + "=" * 100)
+        print("   ÚLTIMOS 5 EQUIPOS (menor precio)")
+        print("=" * 100)
+        print(tabulate(_comp_rows(last_five), headers=headers_comp,
+                       tablefmt="rounded_outline"))
     print()
 
 
