@@ -132,13 +132,49 @@ def req_1(catalog):
     # TODO: Modificar el requerimiento 1
     pass
 
+def req_2(catalog, nucleos, año_de_lanzamiento):
+    cumplen=0
+    peso_total=0
+    inicio=getTime()
+    mapa=sc.new_map()
+    tamaño=al.size(catalog["computers"])
+    for i in range (tamaño):
+        computador=al.get_element(catalog["computers"],i)
+        clave = (computador["cpu_cores"], computador["release_year"])
+        if not sc.contains(mapa,clave):  #si no esta la clave en el mapa creo la lista de computadores y meto la nueva llave
+            lista=al.new_list()
+            sc.put(mapa, clave, lista)
+            
+        else: #si la llave ya existe
+            lista=sc.get(mapa,clave)
+            
+        al.add_last(lista,computador)
+        
+    #debo ordenar con merge me interesa comparar por peso y el criterio de desempate es model
+        
+        
+    clave_busqueda=nucleos,año_de_lanzamiento # de lo que ya filtre previamente ahora solo busco lo que me interesa
+    
+    if sc.contains(mapa,clave_busqueda):
+        lista_onjetivo=sc.get(mapa,clave_busqueda)
+        tamaño_objetivo=al.size(lista_onjetivo)
+        for i in range(tamaño_objetivo):
+            computador=al.get_element(lista_onjetivo,i)
+            cumplen+=1
+            peso_total+=computador["weight_kg"]
+            
+    else:
+        return 0, 0, None, deltaTime(inicio, getTime())
+    
+    peso_promedio=peso_total/cumplen
+    fin=getTime()
+    
+    return cumplen, peso_promedio, lista_onjetivo, deltaTime(inicio, fin)
+    
 
-def req_2(catalog):
-    """
-    Retorna el resultado del requerimiento 2
-    """
-    # TODO: Modificar el requerimiento 2
-    pass
+
+    
+   
 
 
 def req_3(catalog, n, gpu_model, brand):
