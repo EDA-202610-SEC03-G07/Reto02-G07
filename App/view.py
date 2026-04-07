@@ -1,12 +1,16 @@
 import sys
-
-
+from tabulate import tabulate
+import App.logic as lg
+import DataStructures.List.array_list as al
+default_limit = 1000
+sys.setrecursionlimit(default_limit*10)
 def new_logic():
     """
         Se crea una instancia del controlador
     """
     #TODO: Llamar la función de la lógica donde se crean las estructuras de datos
-    pass
+    control = lg.new_logic()
+    return control
 
 def print_menu():
     print("Bienvenido")
@@ -24,7 +28,41 @@ def load_data(control):
     Carga los datos
     """
     #TODO: Realizar la carga de datos
-    pass
+    filename = "computer_prices_100.csv"
+    (total, os_counts,
+     min_year, max_year,
+     min_price, max_price,
+     delta_time, delta_memory) = lg.load_data(control, filename)
+    
+    summary = [
+        ["Total de computadores cargados", total],
+        ["Año mínimo de lanzamiento",      min_year  if min_year  is not None else "N/A"],
+        ["Año máximo de lanzamiento",      max_year  if max_year  is not None else "N/A"],
+        ["Precio mínimo (USD)",            f"${min_price:,.2f}" if min_price is not None else "N/A"],
+        ["Precio máximo (USD)",            f"${max_price:,.2f}" if max_price is not None else "N/A"],
+        ["Tiempo de carga (ms)",           f"{delta_time:.2f}"],
+        ["Memoria utilizada (KB)",         f"{delta_memory:.2f}"],
+    ]
+
+    print("\n" + "=" * 55)
+    print("          RESUMEN DE CARGA DE DATOS")
+    print("=" * 55)
+    print(tabulate(summary,
+                   headers=["Métrica", "Valor"],
+                   tablefmt="rounded_outline",
+                   colalign=("left", "right")))
+
+    #  Distribución por sistema operativo 
+    os_rows = sorted(os_counts.items(), key=lambda x: x[1], reverse=True)
+
+    print("\n" + "=" * 55)
+    print("       DISTRIBUCIÓN POR SISTEMA OPERATIVO")
+    print("=" * 55)
+    print(tabulate(os_rows,
+                   headers=["Sistema Operativo", "Cantidad"],
+                   tablefmt="rounded_outline",
+                   colalign=("left", "right")))
+    print()
 
 
 def print_data(control, id):
@@ -32,7 +70,27 @@ def print_data(control, id):
         Función que imprime un dato dado su ID
     """
     #TODO: Realizar la función para imprimir un elemento
-    pass
+    computers = control["model"]["computers"]
+    size = al.size(computers)
+
+    if id < 0 or id >= size:
+        print(f"\n[!] ID {id} fuera de rango. Total de registros: {size}")
+        return
+
+    comp = al.get_element(computers, id)
+
+    # Construye filas con todos los campos disponibles
+    rows = [[key, value if value not in ("", None) else "N/A"]
+            for key, value in comp.items()]
+
+    print("\n" + "=" * 55)
+    print(f"       DETALLE DEL COMPUTADOR  (índice {id})")
+    print("=" * 55)
+    print(tabulate(rows,
+                   headers=["Campo", "Valor"],
+                   tablefmt="rounded_outline",
+                   colalign=("left", "left")))
+    print()
 
 def print_req_1(control):
     """
