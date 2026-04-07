@@ -171,6 +171,8 @@ def req_3(catalog, n, gpu_model, brand):
     Retorna el resultado del requerimiento 3
     """
     # TODO: Modificar el requerimiento 3
+    gpu_model = gpu_model.strip().upper()
+    brand = brand.strip().upper()
     Inicio = getTime()
     
 
@@ -219,26 +221,75 @@ def req_3(catalog, n, gpu_model, brand):
     }
 
 
-def req_4(catalog):
+def req_4(catalog, cpu_brand, gpu_model):
     """
     Retorna el resultado del requerimiento 4
     """
-    # TODO: Modificar el requerimiento 4
-    pass
+    cpu_brand = cpu_brand.strip().upper() 
+    gpu_model = gpu_model.strip().upper() 
+    
+    inner_map = lp.get(catalog["computers_by_cpu_brand_gpu_model"], cpu_brand)
+    # print("\n|-----------------------------|")
+    # print(f"Inner map for CPU brand '{cpu_brand}': {inner_map}")
+    # print(inner_map)
+    # print("|-----------------------------|\n")
+    if inner_map is None:
+        return (0, 0.0, 0.0, 0.0, 0.0, al.new_list())
+    lst = lp.get(inner_map, gpu_model)
+    if lst is None:
+        return (0, 0.0, 0.0, 0.0, 0.0, al.new_list())
+    
+   
+    copied_list = al.new_list()
+    for i in range(al.size(lst)):
+        al.add_last(copied_list, al.get_element(lst, i))
+    
+    total = al.size(copied_list)
+
+    sum_price = 0.0
+    sum_vram = 0.0
+    sum_ram = 0.0
+    sum_boost = 0.0
+    for i in range(total):
+        comp = al.get_element(copied_list, i)
+        price = float(comp["price"]) if comp["price"] else 0.0
+        vram = float(comp["vram_gb"]) if comp["vram_gb"] else 0.0
+        ram = float(comp["ram_gb"]) if comp["ram_gb"] else 0.0
+        boost = float(comp["cpu_boost_ghz"]) if comp["cpu_boost_ghz"] else 0.0
+        sum_price += price
+        sum_vram += vram
+        sum_ram += ram
+        sum_boost += boost
+    
+    avg_price = sum_price / total if total > 0 else 0.0
+    avg_vram = sum_vram / total if total > 0 else 0.0
+    avg_ram = sum_ram / total if total > 0 else 0.0
+    avg_boost = sum_boost / total if total > 0 else 0.0
+    
+   
+    al.merge_sort(copied_list, sort_by_price_desc_weight_asc)
+    
+    return (total, avg_price, avg_vram, avg_ram, avg_boost, copied_list)
 
 
-def req_5(catalog):
+def req_5(catalog, n, initial_release_year, final_release_year, brand, form_factor):
     """
     Retorna el resultado del requerimiento 5
     """
     # TODO: Modificar el requerimiento 5
+    brand = brand.strip().upper()
+    form_factor = form_factor.strip().upper()
+    initial_release_year = int(initial_release_year)
+    final_release_year = int(final_release_year)
     pass
 
-def req_6(catalog):
+def req_6(catalog, n, form_factor, display_type):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
+    form_factor = form_factor.strip().upper()
+    display_type = display_type.strip().upper() 
     pass
 
 
@@ -345,6 +396,25 @@ def sort_by_price_desc_model_asc(comp_a, comp_b):
         model_a = comp_a["model"] or ""
         model_b = comp_b["model"] or ""
         if model_a < model_b:
+            is_sorted = True
+    return is_sorted
+
+
+def sort_by_price_desc_weight_asc(comp_a, comp_b):
+    """
+    Criterio de ordenamiento para merge_sort (retorna True si comp_a debe ir ANTES que comp_b).
+    Ordena por precio de forma descendente y, en caso de empate, por weight_kg de forma ascendente.
+    """
+    is_sorted = False
+    price_a = float(comp_a["price"]) if comp_a["price"] else 0.0
+    price_b = float(comp_b["price"]) if comp_b["price"] else 0.0
+
+    if price_a > price_b:
+        is_sorted = True
+    elif price_a == price_b:
+        weight_a = float(comp_a["weight_kg"]) if comp_a["weight_kg"] else 0.0
+        weight_b = float(comp_b["weight_kg"]) if comp_b["weight_kg"] else 0.0
+        if weight_a < weight_b:
             is_sorted = True
     return is_sorted
 #  -------------------------------------------------------------
