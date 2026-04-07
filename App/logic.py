@@ -174,8 +174,6 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
             
         al.add_last(lista,computador)
         
-    #debo ordenar con merge me interesa comparar por peso y el criterio de desempate es model
-        
         
     clave_busqueda=nucleos,año_de_lanzamiento # de lo que ya filtre previamente ahora solo busco lo que me interesa
     
@@ -189,17 +187,18 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
             
     else:
         return 0, 0, None, deltaTime(inicio, getTime())
-    
     peso_promedio=peso_total/cumplen
+    
+    al.merge_sort(lista_onjetivo,sort_by_weight)
+    
     fin=getTime()
+        
+    if al.size(lista_onjetivo)>20:
+        primeros_10=al.sub_list(lista_onjetivo,0,10)
+        ultimos_10=al.sub_list(lista_onjetivo,-10,10)
+        return cumplen, peso_promedio, primeros_10, ultimos_10, deltaTime(inicio, fin)
     
     return cumplen, peso_promedio, lista_onjetivo, deltaTime(inicio, fin)
-    
-
-
-    
-   
-
 
 def req_3(catalog, n, gpu_model, brand):
     
@@ -435,6 +434,23 @@ def sort_by_price_desc_model_asc(comp_a, comp_b):
             is_sorted = True
     return is_sorted
 
+def sort_by_weight(comp_a, comp_b):
+    is_sorted = False
+    weight_a = 0.0
+    if comp_a["weight_kg"]:
+        weight_a = float(comp_a["weight_kg"])
+    weight_b = 0.0
+    if comp_b["weight_kg"]:
+        weight_b = float(comp_b["weight_kg"])
+
+    if weight_a < weight_b:
+        is_sorted = True
+    elif weight_a == weight_b:
+        model_a = comp_a["model"] or ""
+        model_b = comp_b["model"] or ""
+        if model_a < model_b:
+            is_sorted = True
+    return is_sorted
 
 def sort_by_price_desc_weight_asc(comp_a, comp_b):
     """
@@ -453,6 +469,7 @@ def sort_by_price_desc_weight_asc(comp_a, comp_b):
         if weight_a < weight_b:
             is_sorted = True
     return is_sorted
+
 #  -------------------------------------------------------------
 # Funciones utilizadas para obtener memoria y tiempo
 #  -------------------------------------------------------------
