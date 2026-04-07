@@ -160,8 +160,8 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
     cumplen=0
     peso_total=0
     inicio=getTime()
-    mapa=sc.new_map()
     tamaño=al.size(catalog["computers"])
+    mapa=sc.new_map(tamaño)
     for i in range (tamaño):
         computador=al.get_element(catalog["computers"],i)
         clave = (computador["cpu_cores"], computador["release_year"])
@@ -195,7 +195,7 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
         
     if al.size(lista_onjetivo)>20:
         primeros_10=al.sub_list(lista_onjetivo,0,10)
-        ultimos_10=al.sub_list(lista_onjetivo,-10,10)
+        ultimos_10=al.sub_list(lista_onjetivo,cumplen-10,10)
         return cumplen, peso_promedio, primeros_10, ultimos_10, deltaTime(inicio, fin)
     
     return cumplen, peso_promedio, lista_onjetivo, deltaTime(inicio, fin)
@@ -308,15 +308,87 @@ def req_4(catalog, cpu_brand, gpu_model):
 
 
 def req_5(catalog, n, initial_release_year, final_release_year, brand, form_factor):
-    """
-    Retorna el resultado del requerimiento 5
-    """
-    # TODO: Modificar el requerimiento 5
+    inicio=getTime()
+    
+    numero_AMD=0
+    numero_INTEL=0
+    cumplen=0
+    tamaño=al.size(catalog["computers"])
+    lista_cumplen=al.new_list()
+    
     brand = brand.strip().upper()
-    form_factor = form_factor.strip().upper()
-    initial_release_year = int(initial_release_year)
-    final_release_year = int(final_release_year)
-    pass
+    form_factor = form_factor.strip().upper() #el form factor que me intereza
+    initial_release_year = int(initial_release_year) #el año en el que inicia el rango que me interesa 
+    final_release_year = int(final_release_year) #el año en el que finaliza el rango que me interesa
+    
+    mapa=sc.new_map(tamaño)
+    for i in range(tamaño):
+        computador=al.get_element(catalog["computers"],i)
+        clave = (computador["form_factor"].strip().upper(), computador["brand"].strip().upper())
+        if not sc.contains(mapa,clave):
+            lista=al.new_list()
+            sc.put(mapa,clave,lista)
+            
+        else:
+            lista=sc.get(mapa,clave)
+            
+        al.add_last(lista,computador) #hasta aca cree las llaves marca y factor de forma y las listas y añado cada computador
+        
+        #necesito recorrer la lsta de la clave que me interesa
+        
+    clave_busqueda=(form_factor,brand)
+    
+    if not sc.contains(mapa,clave_busqueda):# si la clave no existe dentro del mapa retorno falso
+        fin=getTime()
+        return 0, 0, None, 0, deltaTime(inicio, fin)
+    
+    else:
+        lista_objetivo=sc.get(mapa,clave_busqueda) # si la llave existe saco la lista y la recorro en busca de los computadores q me sirven
+        tamaño_obj=al.size(lista_objetivo)
+        
+        for i in range(tamaño_obj):
+            computador=al.get_element(lista_objetivo,i)
+            if initial_release_year <= computador["release_year"] <= final_release_year:
+                cumplen+=1
+                al.add_last(lista_cumplen,computador)
+                if computador["cpu_brand"].strip().upper()=="INTEL":
+                    numero_INTEL+=1
+                    
+                elif computador["cpu_brand"].strip().upper()=="AMD":  # reviso que los filtrados sean AMD o INTEL
+                    numero_AMD+=1
+                    
+    #solo me interesan los N solicitados. Adicionalmente debo ordenarlos por Ram si es igual el primer criterio de 
+    #desempate es por la cpu y el segundo por ram
+    if cumplen == 0:
+        fin=getTime()
+        return 0, 0, None, 0, deltaTime(inicio, fin)
+        
+    al.merge_sort(lista_cumplen,sort_crit_req_6)
+    
+    if n > al.size(lista_cumplen): # si el n solicitado excede el numero de los que cumplen retorno los que cumplieron
+        n=al.size(lista_cumplen)
+    
+    n_elements=al.sub_list(lista_cumplen,0,n) 
+    
+    fin=getTime()    
+    return numero_AMD, numero_INTEL, n_elements, cumplen, deltaTime(inicio, fin)  
+            
+                    
+        
+        
+        
+        
+        
+     
+    
+    
+    """
+    1.debo recorrer todos los computadores
+    2.para cada computador me intereza que se encuetre en el rango de años y que su form factor coincida con el que estoy consultando.
+    3. 
+    
+    """
+  
 
 def req_6(catalog, n, form_factor, display_type):
     """
@@ -470,6 +542,38 @@ def sort_by_price_desc_weight_asc(comp_a, comp_b):
             is_sorted = True
     return is_sorted
 
+def sort_crit_req_6(comp_a, comp_b):
+    is_sorted = False
+
+    RAM_a = float(comp_a["ram_gb"] or 0)
+    RAM_b = float(comp_b["ram_gb"] or 0)
+
+    if RAM_a > RAM_b:
+        is_sorted = True
+    elif RAM_a < RAM_b:
+        is_sorted = False
+    else:
+        vel_cpu_a = float(comp_a["cpu_boost_ghz"] or 0)
+        vel_cpu_b = float(comp_b["cpu_boost_ghz"] or 0)
+
+        if vel_cpu_a > vel_cpu_b:
+            is_sorted = True
+        elif vel_cpu_a < vel_cpu_b:
+            is_sorted = False
+        else:
+            price_a = float(comp_a["price"] or 0)
+            price_b = float(comp_b["price"] or 0)
+
+            if price_a < price_b:
+                is_sorted = True
+            elif price_a > price_b:
+                is_sorted = False
+
+    return is_sorted
+    
+    
+    
+    
 #  -------------------------------------------------------------
 # Funciones utilizadas para obtener memoria y tiempo
 #  -------------------------------------------------------------
