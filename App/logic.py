@@ -372,23 +372,6 @@ def req_5(catalog, n, initial_release_year, final_release_year, brand, form_fact
     
     fin=getTime()    
     return numero_AMD, numero_INTEL, n_elements, cumplen, deltaTime(inicio, fin)  
-            
-                    
-        
-        
-        
-        
-        
-     
-    
-    
-    """
-    1.debo recorrer todos los computadores
-    2.para cada computador me intereza que se encuetre en el rango de años y que su form factor coincida con el que estoy consultando.
-    3. 
-    
-    """
-  
 
 def req_6(catalog, n, form_factor, display_type):
     """
