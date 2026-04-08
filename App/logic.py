@@ -244,8 +244,8 @@ def req_3(catalog, n, gpu_model, brand):
         elif precio1 < precio2:
             return False
         else:
-            peso1 = float(comp1.get("weight"))
-            peso2 = float(comp2.get("weight"))
+            peso1 = float(comp1.get("weight_kg"))
+            peso2 = float(comp2.get("weight_kg"))
             return peso1 > peso2
 
     al.merge_sort(lista_filtrada,criterio_ordenamiento)
@@ -261,8 +261,8 @@ def req_3(catalog, n, gpu_model, brand):
 
     Tiempo_final = Final - Inicio
 
-    return Tiempo_final,total,promedio_ram,resultado_n
-
+    return {"tiempo": Tiempo_final,"total": total,"promedio_ram": promedio_ram,"resultado_n": resultado_n
+    }
 
 def req_4(catalog, cpu_brand, gpu_model):
     """
@@ -463,7 +463,7 @@ def req_6(catalog, n, form_factor, display_type, año_inicial, año_final):
     Final = getTime()
     tiempo_final = Final - Inicio
     
-    return tiempo_final,total,contador_windows,contador_linux,resultado_n
+    return {"tiempo": tiempo_final, "total": total, "windows": contador_windows, "linux": contador_linux, "resultado_n": resultado_n}
 
 
 def add_computer(catalog, computer):
