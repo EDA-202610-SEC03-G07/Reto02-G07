@@ -189,12 +189,35 @@ def print_req_2(control):
     pass
 
 
+
 def print_req_3(control, n, gpu_model, brand):
     """
-        Función que imprime la solución del Requerimiento 3 en consola
+    Función que imprime la solución del Requerimiento 3 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 3
-    pass
+    result = lg.req_3(control, n, gpu_model, brand)
+
+    print(f"\nTiempo de ejecución: {result['execution_time']:.2f} ms")
+    print(f"Total de computadores encontrados: {result['total']}")
+    print(f"RAM promedio: {result['avg_ram']:.2f} GB")
+
+    rows = []
+    top_n = result["top_n"]
+    size = al.size(top_n)
+
+    for i in range(size):
+        comp = al.get_element(top_n, i)
+        device_type = comp.get("device_type") or "N/A"
+        model = comp.get("model") or "N/A"
+        ram = comp.get("ram_gb") or "N/A"
+        storage = comp.get("storage_gb") or "N/A"
+        gpu_brand = comp.get("gpu_brand") or "N/A"
+        gpu_mod = comp.get("gpu_model") or "N/A"
+        weight = comp.get("weight") or "N/A"
+        price = f"${float(comp['price']):,.2f}" if comp.get("price") else "N/A"
+        rows.append([device_type, model, ram, storage, gpu_brand, gpu_mod, weight, price])
+
+    headers = ["Tipo", "Modelo", "RAM (GB)", "Almacenamiento", "Marca GPU", "Modelo GPU", "Peso", "Precio"]
+    print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
 
 
 def print_req_4(control, cpu_brand, gpu_model):
@@ -237,12 +260,33 @@ def print_req_5(control, n, initial_release_year, final_release_year, brand, for
     pass
 
 
-def print_req_6(control, n, form_factor, display_type):
+def print_req_6(control, n, form_factor, display_type, año_inicial, año_final):
     """
-        Función que imprime la solución del Requerimiento 6 en consola
+    Función que imprime la solución del Requerimiento 6 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 6
-    pass
+    result = lg.req_6(control, n, form_factor, display_type, año_inicial, año_final)
+
+    print(f"\nTiempo de ejecución: {result['execution_time']:.2f} ms")
+    print(f"Total de computadores encontrados: {result['total']}")
+    print(f"Total con Windows: {result['count_windows']}")
+    print(f"Total con Linux: {result['count_linux']}")
+
+    rows = []
+    top_n = result["top_n"]
+    size = al.size(top_n)
+
+    for i in range(size):
+        comp = al.get_element(top_n, i)
+        model = comp.get("model") or "N/A"
+        ram = comp.get("ram_gb") or "N/A"
+        cpu_model = comp.get("cpu_model") or "N/A"
+        cpu_boost = comp.get("cpu_boost_ghz") or "N/A"
+        cpu_max = comp.get("cpu_boost_ghz") or "N/A"
+        score = f"{float(comp['efficiency_score']):.4f}" if comp.get("efficiency_score") else "N/A"
+        rows.append([model, ram, cpu_model, cpu_boost, cpu_max, score])
+
+    headers = ["Modelo", "RAM (GB)", "Modelo CPU", "Boost CPU", "Frec. Máx CPU", "Puntaje Eficiencia"]
+    print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
 
 # Se crea la lógica asociado a la vista
 control = new_logic()
