@@ -252,20 +252,20 @@ def req_3(catalog, n, gpu_model, brand):
     
 
    
-    GPU = lp.get(catalog["computers_by_gpu"], gpu_model)
+    GPU = lp.get(catalog["computers_by_gpu_brand"], gpu_model)
 
     lista_filtrada = al.new_list()
     ram = 0
-
+    
     if GPU is not None:
-        gpu_list = GPU["value"]
-        
-        for i in range(al.size(gpu_list)):
-            comp = al.get_element(gpu_list, i)
+        gpu_list = lp.get(GPU, brand)
 
-            if comp.get("brand", "") == brand:
+        if gpu_list is not None:
+            for i in range(al.size(gpu_list)):
+                comp = al.get_element(gpu_list, i)
                 al.add_last(lista_filtrada, comp)
-                ram += float(comp.get("ram", 0))
+                ram += int(comp.get("ram_gb", 0))
+
                
 
     
@@ -274,8 +274,21 @@ def req_3(catalog, n, gpu_model, brand):
         promedio_ram = ram / total
     else:
         promedio_ram = 0
+        
+    def criterio_ordenamiento(comp1, comp2):
+        precio1 = float(comp1.get("price"))
+        precio2 = float(comp2.get("price"))
 
-    al.merge_sort(lista_filtrada)
+        if precio1 > precio2:
+            return True
+        elif precio1 < precio2:
+            return False
+        else:
+            peso1 = float(comp1.get("weight_kg"))
+            peso2 = float(comp2.get("weight_kg"))
+            return peso1 > peso2
+
+    al.merge_sort(lista_filtrada,criterio_ordenamiento)
 
    
     if n > total:
@@ -288,13 +301,8 @@ def req_3(catalog, n, gpu_model, brand):
 
     Tiempo_final = Final - Inicio
 
-    return {
-        "execution_time": Tiempo_final,
-        "total": total,
-        "avg_ram": promedio_ram,
-        "top_n": resultado_n
+    return {"tiempo": Tiempo_final,"total": total,"promedio_ram": promedio_ram,"resultado_n": resultado_n
     }
-
 
 def req_4(catalog, cpu_brand, gpu_model):
     """
@@ -460,16 +468,90 @@ def req_5(catalog, n, initial_release_year, final_release_year, brand, form_fact
     
     fin=getTime()    
     return numero_AMD, numero_INTEL, n_elements, cumplen, deltaTime(inicio, fin)  
-"""
-def req_6(catalog, n, form_factor, display_type):
+            
+                    
+        
+        
+        
+        
+        
+     
+    
+    
+    """
+    1.debo recorrer todos los computadores
+    2.para cada computador me intereza que se encuetre en el rango de años y que su form factor coincida con el que estoy consultando.
+    3. 
+    
+    """
+  
+
+def req_6(catalog, n, form_factor, display_type, año_inicial, año_final):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
     form_factor = form_factor.strip().upper()
     display_type = display_type.strip().upper() 
-    pass
+    Inicio = getTime()
 
+    lista_filtrada = al.new_list()
+    contador_windows = 0
+    contador_linux = 0
+    contador_total = 0
+    
+    mapa_pantallas = lp.get(catalog["computers_by_form_display"], form_factor)
+    
+    if mapa_pantallas is not None:
+        computadoras_pantalla = lp.get(mapa_pantallas, display_type)
+        
+        if computadoras_pantalla is not None:
+            for i in range(al.size(computadoras_pantalla)):
+                comp = al.get_element(computadoras_pantalla, i)
+                
+                laptops = comp.get("device_type").strip().upper()
+                año = int(comp.get("release_year"))
+                
+                if laptops == "LAPTOP" and int(año_final) >= año >= int(año_inicial):
+                    battery_wh = float(comp.get("battery_wh"))
+                    cpu_boost = float(comp.get("cpu_boost_ghz"))
+                    charger_watts = float(comp.get("charger_watts"))
+                    
+                    puntaje_eficiente = (battery_wh * cpu_boost) / charger_watts 
+                    comp["efficiency_score"] = puntaje_eficiente
+                    al.add_last(lista_filtrada, comp)
+                    
+                    sistema_operativo = comp.get("os", "").strip().upper()
+                    if sistema_operativo == "WINDOWS":
+                        contador_windows += 1
+                    elif sistema_operativo == "LINUX":
+                        contador_linux += 1
+    total = al.size(lista_filtrada)
+    
+    def criterio_ordenamiento(comp1, comp2):
+        puntaje1 = comp1.get("efficiency_score", 0)
+        puntaje2 = comp2.get("efficiency_score", 0)
+        
+        if puntaje1 > puntaje2:
+            return True 
+        elif puntaje1 < puntaje2:
+            return False
+        else:
+            precio1 = float(comp1.get("price"))
+            precio2 = float(comp2.get("price"))
+            return precio1 < precio2
+        
+    al.merge_sort(lista_filtrada, criterio_ordenamiento)
+    resultado_n = al.new_list()
+    if n > total:
+        n = total
+        
+    for i in range(n):
+        al.add_last(resultado_n, al.get_element(lista_filtrada, i))
+    Final = getTime()
+    tiempo_final = Final - Inicio
+    
+    return {"tiempo": tiempo_final, "total": total, "windows": contador_windows, "linux": contador_linux, "resultado_n": resultado_n}
 
 
 def add_computer(catalog, computer):
