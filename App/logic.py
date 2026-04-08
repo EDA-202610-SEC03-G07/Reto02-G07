@@ -177,7 +177,8 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
     for i in range(tamaño):
         computador=al.get_element(lista,i)
         al.add_last(copia,computador)
-        peso_total+=computador["weight_kg"]
+        peso=float(computador["weight_kg"])
+        peso_total+=peso
         cumplen+=1
         
     peso_promedio=peso_total/cumplen
@@ -188,7 +189,15 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
     if al.size(copia)>20:
         primeros_10=al.sub_list(copia,0,10)
         ultimos_10=al.sub_list(copia,cumplen-10,10)
-        return cumplen, peso_promedio, primeros_10, ultimos_10, deltaTime(inicio, fin)
+        primeros_y_ultimos=al.new_list()
+        for i in range(al.size(primeros_10)):
+            comp = al.get_element(primeros_10,i)
+            al.add_last(primeros_y_ultimos, comp)
+            
+        for i in range(al.size(ultimos_10)):
+            comp = al.get_element(ultimos_10,i)
+            al.add_last(primeros_y_ultimos, comp)
+        return cumplen, peso_promedio, primeros_y_ultimos, deltaTime(inicio, fin)
     
     return cumplen, peso_promedio, lista, deltaTime(inicio, fin)
         
@@ -368,18 +377,19 @@ def req_5(catalog, n, initial_release_year, final_release_year, brand, form_fact
     initial_release_year = int(initial_release_year) #el año en el que inicia el rango que me interesa 
     final_release_year = int(final_release_year) #el año en el que finaliza el rango que me interesa
     
-    mapa=lp.get(catalog["computers_by_brand_form"]) #saco el mapa de los computadores con la marca y el form factor
+    mapa=lp.get(catalog["computers_by_brand_form"],brand) #saco el mapa de los computadores con la marca y el form factor
     if mapa is None:
         fin=getTime()
         return 0, 0, None, 0, deltaTime(inicio, fin)
-    lista=lp.get(mapa,brand)
+    lista=lp.get(mapa,form_factor)
     if lista is None:
         fin=getTime()
         return 0, 0, None, 0, deltaTime(inicio, fin)
     
     for i in range(al.size(lista)):
-        computador=al.get(lista,i)
-        if initial_release_year <= computador["release_year"] <= final_release_year:
+        computador=al.get_element(lista,i)
+        anio=int(computador["release_year"])
+        if initial_release_year <= anio <= final_release_year:
             cumplen+=1
             al.add_last(lista_cumplen,computador)
             if computador["cpu_brand"].strip().upper()=="INTEL":
@@ -470,26 +480,16 @@ def req_5(catalog, n, initial_release_year, final_release_year, brand, form_fact
     return numero_AMD, numero_INTEL, n_elements, cumplen, deltaTime(inicio, fin)  
             
                     
+"""        
         
         
         
         
-        
-     
     
-    
-    """
-    1.debo recorrer todos los computadores
-    2.para cada computador me intereza que se encuetre en el rango de años y que su form factor coincida con el que estoy consultando.
-    3. 
-    
-    """
-  
 
 def req_6(catalog, n, form_factor, display_type, año_inicial, año_final):
-    """
-    Retorna el resultado del requerimiento 6
-    """
+
+
     # TODO: Modificar el requerimiento 6
     form_factor = form_factor.strip().upper()
     display_type = display_type.strip().upper() 
