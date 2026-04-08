@@ -156,7 +156,47 @@ def req_1(catalog, brand, form_factor):
     
     return (total, avg_price, copied_list)
 
+
 def req_2(catalog, nucleos, año_de_lanzamiento):
+    cumplen=0
+    peso_total=0
+    inicio=getTime()
+    mapa=lp.get(catalog["computers_by_cores_year"],nucleos)
+    
+    if mapa is None:
+        fin=getTime()
+        return 0, 0, None, deltaTime(inicio, fin)
+    lista=lp.get(mapa,año_de_lanzamiento)
+    if lista is None:
+        fin=getTime()
+        return 0, 0, None, deltaTime(inicio, fin)
+    
+    copia=al.new_list()
+    tamaño=al.size(lista)
+    
+    for i in range(tamaño):
+        computador=al.get_element(lista,i)
+        al.add_last(copia,computador)
+        peso_total+=computador["weight_kg"]
+        cumplen+=1
+        
+    peso_promedio=peso_total/cumplen
+    
+    al.merge_sort(copia,sort_by_weight)
+    fin=getTime()
+    
+    if al.size(copia)>20:
+        primeros_10=al.sub_list(copia,0,10)
+        ultimos_10=al.sub_list(copia,cumplen-10,10)
+        return cumplen, peso_promedio, primeros_10, ultimos_10, deltaTime(inicio, fin)
+    
+    return cumplen, peso_promedio, lista, deltaTime(inicio, fin)
+        
+
+"""
+def req_2(catalog, nucleos, año_de_lanzamiento):
+    
+
     cumplen=0
     peso_total=0
     inicio=getTime()
@@ -199,7 +239,7 @@ def req_2(catalog, nucleos, año_de_lanzamiento):
         return cumplen, peso_promedio, primeros_10, ultimos_10, deltaTime(inicio, fin)
     
     return cumplen, peso_promedio, lista_onjetivo, deltaTime(inicio, fin)
-
+"""
 def req_3(catalog, n, gpu_model, brand):
     
     """
@@ -293,7 +333,7 @@ def req_4(catalog, cpu_brand, gpu_model):
         boost = float(comp["cpu_boost_ghz"]) if comp["cpu_boost_ghz"] else 0.0
         sum_price += price
         sum_vram += vram
-        sum_ram += ram
+        sum_ram += ram 
         sum_boost += boost
     
     avg_price = sum_price / total if total > 0 else 0.0
@@ -306,7 +346,55 @@ def req_4(catalog, cpu_brand, gpu_model):
     
     return (total, avg_price, avg_vram, avg_ram, avg_boost, copied_list)
 
-
+def req_5(catalog, n, initial_release_year, final_release_year, brand, form_factor):
+    inicio=getTime()
+    
+    numero_AMD=0
+    numero_INTEL=0
+    cumplen=0
+    tamaño=al.size(catalog["computers"])
+    lista_cumplen=al.new_list()
+    
+    brand = brand.strip().upper()
+    form_factor = form_factor.strip().upper() #el form factor que me intereza
+    initial_release_year = int(initial_release_year) #el año en el que inicia el rango que me interesa 
+    final_release_year = int(final_release_year) #el año en el que finaliza el rango que me interesa
+    
+    mapa=lp.get(catalog["computers_by_brand_form"]) #saco el mapa de los computadores con la marca y el form factor
+    if mapa is None:
+        fin=getTime()
+        return 0, 0, None, 0, deltaTime(inicio, fin)
+    lista=lp.get(mapa,brand)
+    if lista is None:
+        fin=getTime()
+        return 0, 0, None, 0, deltaTime(inicio, fin)
+    
+    for i in range(al.size(lista)):
+        computador=al.get(lista,i)
+        if initial_release_year <= computador["release_year"] <= final_release_year:
+            cumplen+=1
+            al.add_last(lista_cumplen,computador)
+            if computador["cpu_brand"].strip().upper()=="INTEL":
+                numero_INTEL+=1
+                    
+            elif computador["cpu_brand"].strip().upper()=="AMD":  # reviso que los filtrados sean AMD o INTEL
+                numero_AMD+=1
+                
+    if cumplen == 0:
+        fin=getTime()
+        return 0, 0, None, 0, deltaTime(inicio, fin)
+        
+    al.merge_sort(lista_cumplen,sort_crit_req_6)
+    
+    if n > al.size(lista_cumplen): # si el n solicitado excede el numero de los que cumplen retorno los que cumplieron
+        n=al.size(lista_cumplen)
+    
+    n_elements=al.sub_list(lista_cumplen,0,n) 
+    
+    fin=getTime()    
+    return numero_AMD, numero_INTEL, n_elements, cumplen, deltaTime(inicio, fin)                
+                
+"""
 def req_5(catalog, n, initial_release_year, final_release_year, brand, form_factor):
     inicio=getTime()
     
@@ -372,7 +460,7 @@ def req_5(catalog, n, initial_release_year, final_release_year, brand, form_fact
     
     fin=getTime()    
     return numero_AMD, numero_INTEL, n_elements, cumplen, deltaTime(inicio, fin)  
-
+"""
 def req_6(catalog, n, form_factor, display_type):
     """
     Retorna el resultado del requerimiento 6
