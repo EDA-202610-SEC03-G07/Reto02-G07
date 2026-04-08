@@ -261,12 +261,7 @@ def req_3(catalog, n, gpu_model, brand):
 
     Tiempo_final = Final - Inicio
 
-    return {
-        "execution_time": Tiempo_final,
-        "total": total,
-        "avg_ram": promedio_ram,
-        "top_n": resultado_n
-    }
+    return {Tiempo_final,total,promedio_ram,resultado_n}
 
 
 def req_4(catalog, cpu_brand, gpu_model):
@@ -468,12 +463,7 @@ def req_6(catalog, n, form_factor, display_type, año_inicial, año_final):
     Final = getTime()
     tiempo_final = Final - Inicio
     
-    return {
-        "execution_time": tiempo_final,
-        "total": total,
-        "count_windows": contador_windows,
-        "count_linux": contador_linux,
-        "top_n": resultado_n }
+    return {tiempo_final,total,contador_windows,contador_linux,resultado_n }
 
 
 def add_computer(catalog, computer):
