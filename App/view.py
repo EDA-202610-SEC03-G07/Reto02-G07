@@ -221,7 +221,7 @@ def print_req_3(control, n, gpu_model, brand):
     """
     Función que imprime la solución del Requerimiento 3 en consola
     """
-    total, promedio_ram, resultado_n = lg.req_3(control, n, gpu_model, brand)
+    Tiempo_final,total, promedio_ram, resultado_n = lg.req_3(control, n, gpu_model, brand)
 
     print(f"\nTiempo de ejecución: {Tiempo_final:.2f} ms")
     print(f"Total de computadores encontrados: {total}")
@@ -319,14 +319,13 @@ def print_req_5(control, n, initial_release_year, final_release_year, brand, for
         Función que imprime la solución del Requerimiento 5 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 5
-    pass
 
 
-def print_req_6(control, n, form_factor, display_type, año_inicial, año_final):
+def print_req_6(control, n, form_factor, display_type, anio_inicial, anio_final):
     """
     Función que imprime la solución del Requerimiento 6 en consola
     """
-    tiempo_final, total, contador_windows, contador_linux, resultado_n = lg.req_6(control, n, form_factor, display_type, año_inicial, año_final)
+    tiempo_final, total, contador_windows, contador_linux, resultado_n = lg.req_6(control, n, form_factor, display_type, anio_inicial, anio_final)
 
     print(f"\nTiempo de ejecución: {tiempo_final:.2f} ms")
     print(f"Total de computadores encontrados: {total}")
@@ -396,9 +395,11 @@ def main():
 
         elif int(inputs) == 6:
             n = int(input("Ingrese el número de resultados a mostrar: "))
-            form_factor = input("Ingrese el factor de forma a buscar (ATX, SFF, MICRO-ATX): ")
-            display_type = input("Ingrese el tipo de pantalla a buscar (LCD, LED, OLED): ")
-            print_req_6(control, n, form_factor, display_type)
+            form_factor = input("Ingrese el factor de forma a buscar (Gaming, Mainstream, Workstation): ")
+            display_type = input("Ingrese el tipo de pantalla a buscar (Mini-LED, LED, OLED): ")
+            anio_inicial = input("Ingrese el año de lanzamiento inicial: ")
+            anio_final = input("Ingrese el año de lanzamiento final: ")
+            print_req_6(control, n, form_factor, display_type, anio_inicial, anio_final)
 
         elif int(inputs) == 7:
             working = False
