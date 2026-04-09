@@ -194,9 +194,9 @@ def print_req_3(control, n, gpu_model, brand):
     """
     Función que imprime la solución del Requerimiento 3 en consola
     """
-    total, promedio_ram, resultado_n = lg.req_3(control, n, gpu_model, brand)
+    tiempo_final, total, promedio_ram, resultado_n = lg.req_3(control, n, gpu_model, brand)
 
-    print(f"\nTiempo de ejecución: {Tiempo_final:.2f} ms")
+    print(f"\nTiempo de ejecución: {tiempo_final:.2f} ms")
     print(f"Total de computadores encontrados: {total}")
     print(f"RAM promedio: {promedio_ram:.2f} GB")
 
@@ -273,7 +273,7 @@ def print_req_6(control, n, form_factor, display_type, año_inicial, año_final)
     rows = []
     size = al.size(resultado_n)
 
-    for i in range(size):
+    for i in range(size): 
         comp = al.get_element(resultado_n, i)
         model = comp.get("model") or "N/A"
         ram = comp.get("ram_gb") or "N/A"
