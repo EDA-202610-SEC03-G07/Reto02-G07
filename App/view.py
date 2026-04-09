@@ -181,34 +181,7 @@ def print_req_1(control, brand, form_factor):
     print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
 
 
-def print_req_2(control, nucleos, año_de_lanzamiento):
-    cumplen, peso_promedio, lista,tiempo_de_ejecucion=lg.req_2(control, nucleos, año_de_lanzamiento)
-    print(f"\nTiempo de ejecución: {tiempo_de_ejecucion:.2f} ms")
-    print(f"Total de computadores encontrados: {cumplen}")
-    print(f"Peso promedio: {peso_promedio:,.2f}KG")
-    def build_row(comp):
-        device_type = comp["device_type"] or "N/A"
-        model = comp["model"] or "N/A"
-        os = comp["os"] or "N/A"
-        cpu_brand = comp["cpu_brand"] or "N/A"
-        ram_gb = comp["ram_gb"] or "N/A"
-        storage_capacity = comp["storage_gb"] or "N/A"
-        price = "N/A"
-        if comp["price"]:
-            price = f"${float(comp["price"]):,.2f}"
-            
-        return [device_type, model, os, cpu_brand, ram_gb, storage_capacity, price]
-    
-    rows = []
-    size = al.size(lista)
-    for i in range(size):
-        comp = al.get_element(lista, i)
-        rows.append(build_row(comp))
-    
-    headers = ["Tipo", "Modelo", "OS", "CPU Brand", "RAM (GB)", "Almacenamiento", "Precio (USD)"]
-    print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
-        
-    
+def print_req_2(control):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
@@ -221,25 +194,24 @@ def print_req_3(control, n, gpu_model, brand):
     """
     Función que imprime la solución del Requerimiento 3 en consola
     """
-    result = lg.req_3(control, n, gpu_model, brand)
+    total, promedio_ram, resultado_n = lg.req_3(control, n, gpu_model, brand)
 
-    print(f"\nTiempo de ejecución: {result['execution_time']:.2f} ms")
-    print(f"Total de computadores encontrados: {result['total']}")
-    print(f"RAM promedio: {result['avg_ram']:.2f} GB")
+    print(f"\nTiempo de ejecución: {Tiempo_final:.2f} ms")
+    print(f"Total de computadores encontrados: {total}")
+    print(f"RAM promedio: {promedio_ram:.2f} GB")
 
     rows = []
-    top_n = result["top_n"]
-    size = al.size(top_n)
+    size = al.size(resultado_n)
 
     for i in range(size):
-        comp = al.get_element(top_n, i)
+        comp = al.get_element(resultado_n, i)
         device_type = comp.get("device_type") or "N/A"
         model = comp.get("model") or "N/A"
         ram = comp.get("ram_gb") or "N/A"
         storage = comp.get("storage_gb") or "N/A"
         gpu_brand = comp.get("gpu_brand") or "N/A"
         gpu_mod = comp.get("gpu_model") or "N/A"
-        weight = comp.get("weight") or "N/A"
+        weight = comp.get("weight_kg") or "N/A"
         price = f"${float(comp['price']):,.2f}" if comp.get("price") else "N/A"
         rows.append([device_type, model, ram, storage, gpu_brand, gpu_mod, weight, price])
 
@@ -280,42 +252,6 @@ def print_req_4(control, cpu_brand, gpu_model):
 
 
 def print_req_5(control, n, initial_release_year, final_release_year, brand, form_factor):
-    numero_AMD, numero_INTEL, n_elements, cumplen,tiempo=lg.req_5(control, n, initial_release_year, final_release_year, brand, form_factor)
-    
-    print(f"\nTiempo de ejecución: {tiempo:.2f} ms")
-    print(f"Total de computadores encontrados: {cumplen}")
-    print(f"Número total de computadores con procesador “AMD” que cumplieron el filtro: {numero_AMD}")
-    print(f"Número total de computadores con procesador “Intel” que cumplieron el filtro: {numero_INTEL} ")
-    
-    def build_row(comp):
-        device_type = comp["device_type"] or "N/A"
-        model = comp["model"] or "N/A"
-        ram_gb = comp["ram_gb"] or "N/A"
-        cpu_brand = comp["cpu_brand"] or "N/A"
-        cpu_boost_ghz = comp["cpu_boost_ghz"] or "N/A"
-        cpu_model = comp["cpu_model"] or "N/A"
-        release_year = comp["release_year"] or "N/A"
-        price = "N/A"
-        if comp["price"]:
-            price = f"${float(comp["price"]):,.2f}"
-        return [device_type, model, ram_gb, cpu_brand, cpu_model, cpu_boost_ghz, release_year,price]
-    
-    rows=[]
-    size=al.size(n_elements)
-    for i in range(size):
-        comp=al.get_element(n_elements,i)
-        rows.append(build_row(comp))
-        
-    headers = ["device_type", "Modelo", "ram_gb", "CPU Brand", "cpu_model", "cpu_boost_ghz", "release_year","Precio (USD)"]
-    print(tabulate(rows, headers=headers, tablefmt="rounded_outline"))
-        
-        
-        
-        
-        
-    
-    
-    
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
@@ -327,19 +263,18 @@ def print_req_6(control, n, form_factor, display_type, año_inicial, año_final)
     """
     Función que imprime la solución del Requerimiento 6 en consola
     """
-    result = lg.req_6(control, n, form_factor, display_type, año_inicial, año_final)
+    tiempo_final, total, contador_windows, contador_linux, resultado_n = lg.req_6(control, n, form_factor, display_type, año_inicial, año_final)
 
-    print(f"\nTiempo de ejecución: {result['execution_time']:.2f} ms")
-    print(f"Total de computadores encontrados: {result['total']}")
-    print(f"Total con Windows: {result['count_windows']}")
-    print(f"Total con Linux: {result['count_linux']}")
+    print(f"\nTiempo de ejecución: {tiempo_final:.2f} ms")
+    print(f"Total de computadores encontrados: {total}")
+    print(f"Total con Windows: {contador_windows}")
+    print(f"Total con Linux: {contador_linux}")
 
     rows = []
-    top_n = result["top_n"]
-    size = al.size(top_n)
+    size = al.size(resultado_n)
 
     for i in range(size):
-        comp = al.get_element(top_n, i)
+        comp = al.get_element(resultado_n, i)
         model = comp.get("model") or "N/A"
         ram = comp.get("ram_gb") or "N/A"
         cpu_model = comp.get("cpu_model") or "N/A"
@@ -373,9 +308,7 @@ def main():
             print_req_1(control, brand, form_factor)
 
         elif int(inputs) == 2:
-            nucleos=input("ingrese el numero de nucleos que desea consultar: ")
-            anio=input("Ingrese el año que desea consultar: ")
-            print_req_2(control,nucleos,anio)
+            print_req_2(control)
 
         elif int(inputs) == 3:
             n = int(input("Ingrese el número de resultados a mostrar: "))
