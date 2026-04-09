@@ -333,7 +333,9 @@ def main():
             n = int(input("Ingrese el número de resultados a mostrar: "))
             form_factor = input("Ingrese el factor de forma a buscar (ATX, SFF, MICRO-ATX): ")
             display_type = input("Ingrese el tipo de pantalla a buscar (LCD, LED, OLED): ")
-            print_req_6(control, n, form_factor, display_type)
+            año_inicial = input("Ingrese el año de lanzamiento inicial: ")
+            año_final = input("Ingrese el año de lanzamiento final: ")
+            print_req_6(control, n, form_factor, display_type, año_inicial, año_final)
 
         elif int(inputs) == 7:
             working = False
